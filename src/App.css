@@ -1,0 +1,369 @@
+/* ============================================
+   QUIZZIE — Windows 95 Theme
+   ============================================ */
+
+/* === DESKTOP === */
+.desktop {
+  min-height: 100vh;
+  background: #008080;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 16px 52px;
+}
+
+/* === WINDOW === */
+.window {
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  box-shadow: 2px 2px 0 #000000;
+  width: 480px;
+  max-width: 100%;
+}
+
+/* === TITLE BAR === */
+.titlebar {
+  background: linear-gradient(to right, #000080, #1084d0);
+  color: #ffffff;
+  padding: 3px 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+  cursor: default;
+}
+
+.titlebar-icon {
+  font-size: 9px;
+  width: 16px;
+  height: 14px;
+  background: #c0c0c0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  border: 1px solid #808080;
+  flex-shrink: 0;
+}
+
+.titlebar-text {
+  flex: 1;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.titlebar-btns {
+  display: flex;
+  gap: 2px;
+}
+
+.titlebar-btn {
+  width: 16px;
+  height: 14px;
+  background: #c0c0c0;
+  border: 1px solid;
+  border-color: #ffffff #000000 #000000 #ffffff;
+  color: #000;
+  font-size: 8px;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  font-family: 'Tahoma', sans-serif;
+}
+
+/* === MENU BAR === */
+.menubar {
+  background: #c0c0c0;
+  border-bottom: 1px solid #808080;
+  padding: 1px 0;
+  display: flex;
+}
+
+.menu-item {
+  padding: 2px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.menu-item:hover {
+  background: #000080;
+  color: #fff;
+}
+
+/* === WINDOW BODY === */
+.window-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* === INSET BOX (sunken panel) === */
+.inset-box {
+  background: #ffffff;
+  border: 2px solid;
+  border-color: #808080 #ffffff #ffffff #808080;
+  padding: 10px;
+}
+
+/* === QUIZ HEADER === */
+.quiz-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* === QUESTION === */
+.question-box {
+  min-height: 80px;
+}
+
+.attempt-label {
+  font-size: 11px;
+  color: #808080;
+  margin-bottom: 8px;
+}
+
+.question-text {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 15px;
+  letter-spacing: 1.5px;
+  line-height: 1.8;
+  color: #000000;
+  word-break: break-all;
+}
+
+/* === FEEDBACK === */
+.feedback-box {
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 2px solid;
+}
+
+.feedback-box.success {
+  background: #c8ffc8;
+  border-color: #00aa00 #006600 #006600 #00aa00;
+  color: #004400;
+}
+
+.feedback-box.error {
+  background: #ffc8c8;
+  border-color: #aa0000 #660000 #660000 #aa0000;
+  color: #440000;
+}
+
+/* === CHOICES === */
+.choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+/* === BUTTON === */
+.btn {
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  padding: 5px 12px;
+  cursor: pointer;
+  font-family: 'Tahoma', 'Arial', sans-serif;
+  font-size: 12px;
+  color: #000;
+  min-height: 28px;
+}
+
+.btn:hover:not(:disabled) {
+  background: #d0d0d0;
+}
+
+.btn:active:not(:disabled) {
+  border-color: #808080 #ffffff #ffffff #808080;
+}
+
+.btn:focus:not(:disabled) {
+  outline: 1px dotted #000000;
+  outline-offset: -4px;
+}
+
+.btn:disabled {
+  cursor: default;
+  color: #808080;
+}
+
+.choice-btn {
+  text-align: left;
+  width: 100%;
+}
+
+.btn-correct {
+  background: #008000 !important;
+  color: #fff !important;
+  border-color: #00cc00 #004400 #004400 #00cc00 !important;
+}
+
+.btn-wrong {
+  background: #800000 !important;
+  color: #fff !important;
+  border-color: #cc0000 #440000 #440000 #cc0000 !important;
+}
+
+/* === CONTINUE ROW === */
+.continue-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.continue-row .btn {
+  text-align: center;
+  padding: 5px 16px;
+}
+
+/* === STATUS BAR === */
+.statusbar {
+  border-top: 1px solid #808080;
+  background: #c0c0c0;
+  display: flex;
+  gap: 3px;
+  padding: 3px 4px;
+  font-size: 11px;
+}
+
+.status-pane {
+  border: 1px solid;
+  border-color: #808080 #ffffff #ffffff #808080;
+  padding: 1px 6px;
+  flex: 1;
+}
+
+.status-pane:last-child {
+  flex: 0 0 auto;
+}
+
+/* === TASKBAR === */
+.taskbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
+  background: #c0c0c0;
+  border-top: 2px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  gap: 4px;
+  z-index: 100;
+}
+
+.start-btn {
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  padding: 3px 8px;
+  font-family: 'Tahoma', sans-serif;
+  font-weight: bold;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+}
+
+.start-btn:active {
+  border-color: #808080 #ffffff #ffffff #808080;
+}
+
+.taskbar-divider {
+  width: 2px;
+  height: 28px;
+  border-left: 1px solid #808080;
+  border-right: 1px solid #ffffff;
+  margin: 0 2px;
+}
+
+.taskbar-task {
+  border: 2px solid;
+  border-color: #808080 #ffffff #ffffff #808080;
+  background: repeating-linear-gradient(
+    45deg,
+    #c0c0c0,
+    #c0c0c0 2px,
+    #d4d0c8 2px,
+    #d4d0c8 4px
+  );
+  padding: 3px 10px;
+  font-size: 12px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.taskbar-clock {
+  margin-left: auto;
+  border: 1px solid;
+  border-color: #808080 #ffffff #ffffff #808080;
+  padding: 3px 10px;
+  font-size: 12px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+}
+
+/* === RESULT SCREEN === */
+.result-title {
+  font-size: 18px;
+  text-align: center;
+  font-family: 'Tahoma', sans-serif;
+  font-weight: bold;
+}
+
+.score-summary {
+  text-align: left;
+}
+
+.score-total {
+  font-size: 22px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+  font-family: 'Courier New', monospace;
+}
+
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.score-table th {
+  border-bottom: 2px solid #808080;
+  padding: 4px 8px;
+  text-align: left;
+  background: #000080;
+  color: #fff;
+}
+
+.score-table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid #d0d0d0;
+}
+
+.pts-ok {
+  color: #008000;
+  font-weight: bold;
+}
+
+.pts-zero {
+  color: #800000;
+}
