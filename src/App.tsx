@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import Lottie from './Lottie'
+import DayNightToggle from './DayNightToggle'
 import loadingAnim from './animations/loading2.json'
 import victoryAnim from './animations/victory2.json'
 import errorAnim from './animations/error.json'
 import confettiAnim from './animations/confetti.json'
+import nightmodeAnim from './animations/nightmode.json'
 import './App.css'
 
 interface Question {
@@ -85,7 +87,17 @@ export default function App() {
   const [totalScore, setTotalScore] = useState(0)
   const [phase, setPhase] = useState<Phase>('playing')
   const [scores, setScores] = useState<number[]>([])
+  const [isNight, setIsNight] = useState(false)
   const time = useTime()
+  const desktopClassName = `desktop${isNight ? ' desktop--night' : ''}`
+  const nightBackground = isNight && (
+    <Lottie
+      animationData={nightmodeAnim}
+      loop
+      className="desktop-bg-anim"
+      rendererSettings={{ preserveAspectRatio: 'xMidYMid slice' }}
+    />
+  )
 
   const attempt = wrongPicks.length  // alias lisible
 
@@ -138,7 +150,9 @@ export default function App() {
   // ── TRANSITIONING ────────────────────────────────────────────────────────────
   if (phase === 'transitioning') {
     return (
-      <div className="desktop">
+      <div className={desktopClassName}>
+        {nightBackground}
+        <DayNightToggle onToggle={setIsNight} />
         <div className="window window--small">
           <TitleBar title="Chargement..." />
           <div className="window-body window-body--center">
@@ -154,7 +168,9 @@ export default function App() {
   // ── FINISHED ─────────────────────────────────────────────────────────────────
   if (phase === 'finished') {
     return (
-      <div className="desktop">
+      <div className={desktopClassName}>
+        {nightBackground}
+        <DayNightToggle onToggle={setIsNight} />
         <div className="window">
           <TitleBar title="QUIZZIE.EXE — Resultats" />
           <div className="window-body">
@@ -195,7 +211,9 @@ export default function App() {
   const showFeedback = phase === 'correct' || phase === 'out_of_attempts'
 
   return (
-    <div className="desktop">
+    <div className={desktopClassName}>
+      {nightBackground}
+      <DayNightToggle onToggle={setIsNight} />
       <div className="window">
         <TitleBar title="QUIZZIE.EXE" />
         <MenuBar />
