@@ -1,7 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, type ReactNode } from 'react'
 import Lottie from './Lottie'
 import DayNightToggle from './DayNightToggle'
-import loadingAnim from './animations/loading2.json'
+import StartMenu, { type Page } from './StartMenu'
+import ErrorPage from './ErrorPage'
+import AllAnimationsPage from './AllAnimationsPage'
+import { TitleBar, StatusBar } from './WindowChrome'
+import loadingAnim from './animations/loading.json'
 import victoryAnim from './animations/victory2.json'
 import errorAnim from './animations/error.json'
 import confettiAnim from './animations/confetti.json'
@@ -82,6 +86,7 @@ function useTime() {
 type Phase = 'playing' | 'correct' | 'out_of_attempts' | 'transitioning' | 'finished'
 
 export default function App() {
+  const [page, setPage] = useState<Page>('quiz')
   const [qIndex, setQIndex] = useState(0)
   const [wrongPicks, setWrongPicks] = useState<number[]>([])  // indices des mauvaises réponses choisies
   const [totalScore, setTotalScore] = useState(0)
@@ -147,73 +152,55 @@ export default function App() {
     }, TRANSITION_DURATION * 1000)
   }
 
-  // ── TRANSITIONING ────────────────────────────────────────────────────────────
+  // ── QUIZ WINDOW (transitioning / finished / playing-correct-out_of_attempts) ──
+  let quizWindow: ReactNode
   if (phase === 'transitioning') {
-    return (
-      <div className={desktopClassName}>
-        {nightBackground}
-        <DayNightToggle onToggle={setIsNight} />
-        <div className="window window--small">
-          <TitleBar title="Chargement..." />
-          <div className="window-body window-body--center">
-            <Lottie animationData={loadingAnim} loop style={{ width: 240, height: 240 }} />
-            <p className="loading-label">Veuillez patienter...</p>
-          </div>
+    quizWindow = (
+      <div className="window window--small">
+        <TitleBar title="Chargement..." />
+        <div className="window-body window-body--center">
+          <Lottie animationData={loadingAnim} loop style={{ width: 240, height: 240 }} />
+          <p className="loading-label">Veuillez patienter...</p>
         </div>
-        <Taskbar time={time} />
       </div>
     )
-  }
-
-  // ── FINISHED ─────────────────────────────────────────────────────────────────
-  if (phase === 'finished') {
-    return (
-      <div className={desktopClassName}>
-        {nightBackground}
-        <DayNightToggle onToggle={setIsNight} />
-        <div className="window">
-          <TitleBar title="QUIZZIE.EXE — Resultats" />
-          <div className="window-body">
-            <div className="confetti-wrapper">
-              <Lottie animationData={confettiAnim} loop style={{ width: '100%', height: 140 }} />
-            </div>
-            <p className="result-title">Partie terminee !</p>
-            <div className="inset-box score-summary">
-              <div className="score-total">{totalScore} / 15 points</div>
-              <table className="score-table">
-                <thead>
-                  <tr><th>Question</th><th>Points</th></tr>
-                </thead>
-                <tbody>
-                  {scores.map((s, i) => (
-                    <tr key={i}>
-                      <td>Question {i + 1}</td>
-                      <td className={s > 0 ? 'pts-ok' : 'pts-zero'}>{s} pts</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="continue-row">
-              <button className="btn" onClick={restart}>Rejouer</button>
-            </div>
+  } else if (phase === 'finished') {
+    quizWindow = (
+      <div className="window">
+        <TitleBar title="QUIZZIE.EXE — Resultats" />
+        <div className="window-body">
+          <div className="confetti-wrapper">
+            <Lottie animationData={confettiAnim} loop style={{ width: '100%', height: 140 }} />
           </div>
-          <StatusBar left="Partie terminee" right={`Score : ${totalScore}/15`} />
+          <p className="result-title">Partie terminee !</p>
+          <div className="inset-box score-summary">
+            <div className="score-total">{totalScore} / 15 points</div>
+            <table className="score-table">
+              <thead>
+                <tr><th>Question</th><th>Points</th></tr>
+              </thead>
+              <tbody>
+                {scores.map((s, i) => (
+                  <tr key={i}>
+                    <td>Question {i + 1}</td>
+                    <td className={s > 0 ? 'pts-ok' : 'pts-zero'}>{s} pts</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="continue-row">
+            <button className="btn" onClick={restart}>Rejouer</button>
+          </div>
         </div>
-        <Taskbar time={time} />
+        <StatusBar left="Partie terminee" right={`Score : ${totalScore}/15`} />
       </div>
     )
-  }
-
-  // ── PLAYING / CORRECT / OUT_OF_ATTEMPTS ──────────────────────────────────────
-  const q = QUESTIONS[qIndex]
-  const masked = maskQuestion(q.text, attempt)
-  const showFeedback = phase === 'correct' || phase === 'out_of_attempts'
-
-  return (
-    <div className={desktopClassName}>
-      {nightBackground}
-      <DayNightToggle onToggle={setIsNight} />
+  } else {
+    const q = QUESTIONS[qIndex]
+    const masked = maskQuestion(q.text, attempt)
+    const showFeedback = phase === 'correct' || phase === 'out_of_attempts'
+    quizWindow = (
       <div className="window">
         <TitleBar title="QUIZZIE.EXE" />
         <MenuBar />
@@ -278,21 +265,17 @@ export default function App() {
         </div>
         <StatusBar left="Pret" right={`Q${qIndex + 1}/3`} />
       </div>
-      <Taskbar time={time} />
-    </div>
-  )
-}
+    )
+  }
 
-function TitleBar({ title }: { title: string }) {
   return (
-    <div className="titlebar">
-      <div className="titlebar-icon">■</div>
-      <span className="titlebar-text">{title}</span>
-      <div className="titlebar-btns">
-        <button className="titlebar-btn">_</button>
-        <button className="titlebar-btn">□</button>
-        <button className="titlebar-btn">x</button>
-      </div>
+    <div className={desktopClassName}>
+      {nightBackground}
+      <DayNightToggle onToggle={setIsNight} />
+      {page === 'quiz' && quizWindow}
+      {page === 'error' && <ErrorPage />}
+      {page === 'all' && <AllAnimationsPage />}
+      <Taskbar time={time} page={page} onNavigate={setPage} />
     </div>
   )
 }
@@ -307,19 +290,30 @@ function MenuBar() {
   )
 }
 
-function StatusBar({ left, right }: { left: string; right: string }) {
-  return (
-    <div className="statusbar">
-      <span className="status-pane">{left}</span>
-      <span className="status-pane">{right}</span>
-    </div>
-  )
-}
+function Taskbar({ time, page, onNavigate }: { time: string; page: Page; onNavigate: (page: Page) => void }) {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const taskbarRef = useRef<HTMLDivElement>(null)
 
-function Taskbar({ time }: { time: string }) {
+  useEffect(() => {
+    if (!menuOpen) return
+    function handleClickOutside(e: MouseEvent) {
+      if (taskbarRef.current && !taskbarRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [menuOpen])
+
+  function handleNavigate(p: Page) {
+    onNavigate(p)
+    setMenuOpen(false)
+  }
+
   return (
-    <div className="taskbar">
-      <button className="start-btn">⊞ Demarrer</button>
+    <div className="taskbar" ref={taskbarRef}>
+      {menuOpen && <StartMenu page={page} onNavigate={handleNavigate} />}
+      <button className="start-btn" onClick={() => setMenuOpen(o => !o)}>⊞ Demarrer</button>
       <div className="taskbar-divider" />
       <div className="taskbar-task">QUIZZIE.EXE</div>
       <div className="taskbar-clock">{time}</div>
