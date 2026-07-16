@@ -1,26 +1,12 @@
-import { useRef, useEffect } from 'react'
-import lottie from 'lottie-web'
+import type { CSSProperties } from 'react'
+import LottiePlayer from 'lottie-react'
 
 interface Props {
   animationData: unknown
   loop?: boolean
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export default function Lottie({ animationData, loop = true, style }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!containerRef.current) return
-    const anim = lottie.loadAnimation({
-      container: containerRef.current,
-      renderer: 'svg',
-      loop,
-      autoplay: true,
-      animationData: animationData as object,
-    })
-    return () => anim.destroy()
-  }, [animationData, loop])
-
-  return <div ref={containerRef} style={style} />
+  return <LottiePlayer animationData={animationData} loop={loop} autoplay style={style} />
 }

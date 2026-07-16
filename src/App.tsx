@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import Lottie from './Lottie'
 import loadingAnim from './animations/loading2.json'
-import successAnim from './animations/success.json'
 import victoryAnim from './animations/victory2.json'
 import errorAnim from './animations/error.json'
 import confettiAnim from './animations/confetti.json'
@@ -32,6 +31,8 @@ const QUESTIONS: Question[] = [
 ]
 
 const POINTS = [5, 3, 1]
+
+const TRANSITION_DURATION = 4
 
 /**
  * Masks the question text, progressively revealing more letters with each attempt.
@@ -120,7 +121,7 @@ export default function App() {
         setWrongPicks([])
         setPhase('playing')
       }
-    }, 8000)
+    }, TRANSITION_DURATION * 1000)
   }
 
   function restart() {
@@ -131,7 +132,7 @@ export default function App() {
       setTotalScore(0)
       setScores([])
       setPhase('playing')
-    }, 8000)
+    }, TRANSITION_DURATION * 1000)
   }
 
   // ── TRANSITIONING ────────────────────────────────────────────────────────────
