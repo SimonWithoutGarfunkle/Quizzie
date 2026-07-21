@@ -474,6 +474,11 @@
   gap: 6px;
   padding-bottom: 10px;
   border-bottom: 1px solid #808080;
+  cursor: pointer;
+}
+
+.anim-card:hover {
+  background: #dcdcdc;
 }
 
 .anim-card:last-child {
@@ -490,4 +495,23 @@
 .anim-card-label em {
   font-weight: normal;
   color: #808080;
+}
+
+/* === ANIMATION MODAL (lightbox) === */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  cursor: default;
+}
+
+.modal-window {
+  width: auto;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
 }

@@ -1,4 +1,4 @@
-export function TitleBar({ title }: { title: string }) {
+export function TitleBar({ title, onClose }: { title: string; onClose?: () => void }) {
   return (
     <div className="titlebar">
       <div className="titlebar-icon">■</div>
@@ -6,7 +6,7 @@ export function TitleBar({ title }: { title: string }) {
       <div className="titlebar-btns">
         <button className="titlebar-btn">_</button>
         <button className="titlebar-btn">□</button>
-        <button className="titlebar-btn">x</button>
+        <button className="titlebar-btn" onClick={onClose}>x</button>
       </div>
     </div>
   )
