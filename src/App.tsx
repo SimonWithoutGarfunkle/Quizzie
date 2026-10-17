@@ -142,14 +142,12 @@ export default function App() {
   }
 
   function restart() {
-    setPhase('transitioning')
-    setTimeout(() => {
-      setQIndex(0)
-      setWrongPicks([])
-      setTotalScore(0)
-      setScores([])
-      setPhase('playing')
-    }, TRANSITION_DURATION * 1000)
+    setQIndex(0)
+    setWrongPicks([])
+    setTotalScore(0)
+    setScores([])
+    setPhase('playing')
+    setPage('error')
   }
 
   // ── QUIZ WINDOW (transitioning / finished / playing-correct-out_of_attempts) ──
@@ -159,7 +157,11 @@ export default function App() {
       <div className="window window--small">
         <TitleBar title="Chargement..." />
         <div className="window-body window-body--center">
-          <Lottie animationData={loadingAnim} loop style={{ width: 240, height: 240 }} />
+          <Lottie
+              animationData={loadingAnim}
+              loop
+              style={{ width: 240, height: 240 }}
+          />
           <p className="loading-label">Veuillez patienter...</p>
         </div>
       </div>
