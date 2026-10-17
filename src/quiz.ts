@@ -20,9 +20,28 @@ export const QUESTIONS: Question[] = [
     choices: ["Atlantique", "Indien", "Arctique", "Pacifique"],
     correctIndex: 3,
   },
+  {
+    text: "Quel animal fait miaou ?",
+    choices: ["Chat", "Chien", "Vache", "Canard"],
+    correctIndex: 0,
+  },
+  {
+    text: "Combien de pattes a une araignee ?",
+    choices: ["4", "6", "8", "10"],
+    correctIndex: 2,
+  },
+  {
+    text: "Combien de jours compte une semaine ?",
+    choices: ["5", "7", "10", "12"],
+    correctIndex: 1,
+  },
 ]
 
 export const POINTS = [5, 3, 1]
+
+export function maxScore(questionCount: number): number {
+  return questionCount * POINTS[0]
+}
 
 /**
  * Masks the question text, progressively revealing more letters with each attempt.

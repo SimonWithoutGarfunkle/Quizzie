@@ -10,10 +10,11 @@ import victoryAnim from './animations/victory2.json'
 import errorAnim from './animations/error.json'
 import confettiAnim from './animations/confetti.json'
 import nightmodeAnim from './animations/nightmode.json'
-import { QUESTIONS, POINTS, maskQuestion } from './quiz'
+import { QUESTIONS, POINTS, maskQuestion, maxScore } from './quiz'
 import './App.css'
 
 const TRANSITION_DURATION = 4
+const MAX_SCORE = maxScore(QUESTIONS.length)
 
 function useTime() {
   const fmt = () => {
@@ -126,7 +127,7 @@ export default function App() {
           </div>
           <p className="result-title">Partie terminee !</p>
           <div className="inset-box score-summary">
-            <div className="score-total">{totalScore} / 15 points</div>
+            <div className="score-total">{totalScore} / {MAX_SCORE} points</div>
             <table className="score-table">
               <thead>
                 <tr><th>Question</th><th>Points</th></tr>
@@ -145,7 +146,7 @@ export default function App() {
             <button className="btn" onClick={restart}>Rejouer</button>
           </div>
         </div>
-        <StatusBar left="Partie terminee" right={`Score : ${totalScore}/15`} />
+        <StatusBar left="Partie terminee" right={`Score : ${totalScore}/${MAX_SCORE}`} />
       </div>
     )
   } else {
@@ -215,7 +216,7 @@ export default function App() {
             </div>
           )}
         </div>
-        <StatusBar left="Pret" right={`Q${qIndex + 1}/3`} />
+        <StatusBar left="Pret" right={`Q${qIndex + 1}/${QUESTIONS.length}`} />
       </div>
     )
   }
