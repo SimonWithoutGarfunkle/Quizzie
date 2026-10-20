@@ -433,6 +433,13 @@
   font-family: 'Courier New', monospace;
 }
 
+.score-best {
+  font-size: 13px;
+  text-align: center;
+  margin-bottom: 10px;
+  font-family: 'Courier New', monospace;
+}
+
 .score-table {
   width: 100%;
   border-collapse: collapse;

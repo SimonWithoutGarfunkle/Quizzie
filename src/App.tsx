@@ -10,11 +10,29 @@ import victoryAnim from './animations/victory2.json'
 import errorAnim from './animations/error.json'
 import confettiAnim from './animations/confetti.json'
 import nightmodeAnim from './animations/nightmode.json'
-import { QUESTIONS, POINTS, maskQuestion, maxScore } from './quiz'
+import { QUESTIONS, POINTS, maskQuestion, maxScore, nextBestScore } from './quiz'
 import './App.css'
 
 const TRANSITION_DURATION = 4
 const MAX_SCORE = maxScore(QUESTIONS.length)
+const BEST_SCORE_KEY = 'quizzie.bestScore'
+
+// localStorage peut lever une erreur à l'accès (SecurityError) et à l'écriture (QuotaExceededError)
+function readBestScore(): string | null {
+  try {
+    return localStorage.getItem(BEST_SCORE_KEY)
+  } catch {
+    return null
+  }
+}
+
+function writeBestScore(score: number) {
+  try {
+    localStorage.setItem(BEST_SCORE_KEY, String(score))
+  } catch {
+    // le meilleur score n'est alors pas conservé, la partie continue normalement
+  }
+}
 
 function useTime() {
   const fmt = () => {
@@ -43,6 +61,7 @@ export default function App() {
   const [totalScore, setTotalScore] = useState(0)
   const [phase, setPhase] = useState<Phase>('playing')
   const [scores, setScores] = useState<number[]>([])
+  const [bestScore, setBestScore] = useState(0)
   const [isNight, setIsNight] = useState(false)
   const time = useTime()
   const desktopClassName = `desktop${isNight ? ' desktop--night' : ''}`
@@ -83,6 +102,9 @@ export default function App() {
     setPhase('transitioning')
     setTimeout(() => {
       if (qIndex + 1 >= QUESTIONS.length) {
+        const best = nextBestScore(readBestScore(), totalScore, MAX_SCORE)
+        writeBestScore(best)
+        setBestScore(best)
         setPhase('finished')
       } else {
         setQIndex(qi => qi + 1)
@@ -128,6 +150,7 @@ export default function App() {
           <p className="result-title">Partie terminee !</p>
           <div className="inset-box score-summary">
             <div className="score-total">{totalScore} / {MAX_SCORE} points</div>
+            <div className="score-best">Meilleur score : {bestScore} / {MAX_SCORE} points</div>
             <table className="score-table">
               <thead>
                 <tr><th>Question</th><th>Points</th></tr>

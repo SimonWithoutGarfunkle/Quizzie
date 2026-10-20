@@ -9,16 +9,20 @@ vi.mock('@lottiefiles/dotlottie-react', () => ({ DotLottieReact: () => null }))
 
 beforeEach(() => {
   vi.useFakeTimers()
+  localStorage.clear()
 })
 
 afterEach(() => {
   cleanup()
   vi.useRealTimers()
+  vi.restoreAllMocks()
+  localStorage.clear()
 })
 
 const QUESTION_COUNT = QUESTIONS.length
 const MAX_SCORE = maxScore(QUESTION_COUNT)
 const [FIRST] = QUESTIONS
+const BEST_SCORE_KEY = 'quizzie.bestScore'
 
 function choiceLabel(q: Question, i: number) {
   return `${String.fromCharCode(65 + i)}. ${q.choices[i]}`
@@ -46,6 +50,20 @@ function goToNextQuestion() {
 function scoreRows() {
   // la première ligne est l'en-tête du tableau
   return screen.getAllByRole('row').slice(1)
+}
+
+// rate entièrement les `missed` premières questions et répond juste du premier coup aux autres
+function playGame(missed: number) {
+  QUESTIONS.forEach((q, k) => {
+    if (k < missed) wrongLabels(q).forEach(pick)
+    else pickCorrect(q)
+    goToNextQuestion()
+  })
+  return MAX_SCORE - 5 * missed
+}
+
+function bestScoreLine(score: number) {
+  return `Meilleur score : ${score} / ${MAX_SCORE} points`
 }
 
 describe('App', () => {
@@ -110,5 +128,88 @@ describe('App', () => {
     const rows = scoreRows()
     expect(rows).toHaveLength(QUESTION_COUNT)
     expect(within(rows[0]).getByText('0 pts')).toBeDefined()
+  })
+})
+
+describe('Meilleur score', () => {
+  it("enregistre et affiche le score de la partie quand aucun meilleur score n'existe", () => {
+    render(<App />)
+    const score = playGame(1)
+    expect(screen.getByText(bestScoreLine(score))).toBeDefined()
+    expect(localStorage.getItem(BEST_SCORE_KEY)).toBe(String(score))
+  })
+
+  it('remplace le meilleur score quand la partie le dépasse', () => {
+    localStorage.setItem(BEST_SCORE_KEY, String(MAX_SCORE - 10))
+    render(<App />)
+    const score = playGame(1)
+    expect(screen.getByText(bestScoreLine(score))).toBeDefined()
+    expect(localStorage.getItem(BEST_SCORE_KEY)).toBe(String(score))
+  })
+
+  it('garde le meilleur score quand la partie fait moins', () => {
+    const best = MAX_SCORE - 5
+    localStorage.setItem(BEST_SCORE_KEY, String(best))
+    render(<App />)
+    playGame(2)
+    expect(screen.getByText(bestScoreLine(best))).toBeDefined()
+    expect(localStorage.getItem(BEST_SCORE_KEY)).toBe(String(best))
+  })
+
+  it('garde le meilleur score quand la partie fait exactement autant', () => {
+    const best = MAX_SCORE - 5
+    localStorage.setItem(BEST_SCORE_KEY, String(best))
+    render(<App />)
+    playGame(1)
+    expect(screen.getByText(bestScoreLine(best))).toBeDefined()
+    expect(localStorage.getItem(BEST_SCORE_KEY)).toBe(String(best))
+  })
+
+  it("conserve le meilleur score d'une partie précédente après rechargement de la page", () => {
+    render(<App />)
+    const best = playGame(1)
+    cleanup()
+    render(<App />)
+    playGame(2)
+    expect(screen.getByText(bestScoreLine(best))).toBeDefined()
+  })
+
+  it.each(['abc', '-1', '2.5', String(MAX_SCORE + 1)])(
+    'ignore la valeur enregistrée invalide « %s » et la remplace par le score de la partie',
+    stored => {
+      localStorage.setItem(BEST_SCORE_KEY, stored)
+      render(<App />)
+      const score = playGame(QUESTION_COUNT)
+      expect(screen.getByText(bestScoreLine(score))).toBeDefined()
+      expect(localStorage.getItem(BEST_SCORE_KEY)).toBe(String(score))
+    },
+  )
+
+  it("affiche les résultats normalement quand localStorage lève une erreur", () => {
+    const denied = () => {
+      throw new DOMException('Access denied', 'SecurityError')
+    }
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(denied)
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(denied)
+    render(<App />)
+    const score = playGame(1)
+    expect(screen.getByText('Partie terminee !')).toBeDefined()
+    expect(screen.getByText(`${score} / ${MAX_SCORE} points`)).toBeDefined()
+    expect(screen.getByText(bestScoreLine(score))).toBeDefined()
+  })
+
+  it("n'enregistre rien tant que l'écran de résultats n'est pas atteint", () => {
+    render(<App />)
+    QUESTIONS.forEach((q, k) => {
+      pickCorrect(q)
+      expect(localStorage.getItem(BEST_SCORE_KEY)).toBeNull()
+      if (k < QUESTION_COUNT - 1) goToNextQuestion()
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Question suivante >' }))
+    expect(localStorage.getItem(BEST_SCORE_KEY)).toBeNull()
+    act(() => {
+      vi.runOnlyPendingTimers()
+    })
+    expect(localStorage.getItem(BEST_SCORE_KEY)).toBe(String(MAX_SCORE))
   })
 })

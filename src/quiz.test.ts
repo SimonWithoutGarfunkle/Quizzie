@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { QUESTIONS, maskQuestion, maxScore } from './quiz'
+import { QUESTIONS, maskQuestion, maxScore, nextBestScore } from './quiz'
 
 describe('maskQuestion', () => {
   it('révèle une lettre sur quatre à la première tentative', () => {
@@ -36,4 +36,28 @@ describe('maxScore', () => {
   ])('vaut, pour un quiz de %i question(s), %i points', (questionCount, expected) => {
     expect(maxScore(questionCount)).toBe(expected)
   })
+})
+
+describe('nextBestScore', () => {
+  it("prend le score de la partie quand aucun meilleur score n'est enregistré", () => {
+    expect(nextBestScore(null, 15, 30)).toBe(15)
+  })
+
+  it('garde le plus haut entre le meilleur score enregistré et celui de la partie', () => {
+    expect(nextBestScore('20', 25, 30)).toBe(25)
+    expect(nextBestScore('20', 10, 30)).toBe(20)
+    expect(nextBestScore('20', 20, 30)).toBe(20)
+  })
+
+  it('accepte les bornes 0 et score maximal', () => {
+    expect(nextBestScore('0', 0, 30)).toBe(0)
+    expect(nextBestScore('30', 0, 30)).toBe(30)
+  })
+
+  it.each(['abc', '-1', '2.5', '31', ''])(
+    'ignore la valeur enregistrée invalide « %s » et prend le score de la partie',
+    stored => {
+      expect(nextBestScore(stored, 0, 30)).toBe(0)
+    },
+  )
 })

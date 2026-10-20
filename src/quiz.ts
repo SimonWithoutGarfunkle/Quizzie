@@ -43,6 +43,17 @@ export function maxScore(questionCount: number): number {
   return questionCount * POINTS[0]
 }
 
+function parseBestScore(stored: string | null, max: number): number | null {
+  if (stored === null || !/^\d+$/.test(stored)) return null
+  const value = Number(stored)
+  return value <= max ? value : null
+}
+
+export function nextBestScore(stored: string | null, score: number, max: number): number {
+  const previous = parseBestScore(stored, max)
+  return previous === null ? score : Math.max(previous, score)
+}
+
 /**
  * Masks the question text, progressively revealing more letters with each attempt.
  * - attempt 0: ~25% of letters visible
