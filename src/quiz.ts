@@ -39,6 +39,11 @@ export const QUESTIONS: Question[] = [
 
 export const POINTS = [5, 3, 1]
 
+// Points d'une bonne réponse trouvée après `wrongPicks` erreurs, 0 une fois les essais épuisés
+export function pointsFor(wrongPicks: number): number {
+  return wrongPicks < POINTS.length - 1 ? POINTS[wrongPicks] : 0
+}
+
 export function maxScore(questionCount: number): number {
   return questionCount * POINTS[0]
 }

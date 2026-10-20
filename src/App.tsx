@@ -10,7 +10,7 @@ import victoryAnim from './animations/victory2.json'
 import errorAnim from './animations/error.json'
 import confettiAnim from './animations/confetti.json'
 import nightmodeAnim from './animations/nightmode.json'
-import { QUESTIONS, POINTS, maskQuestion, maxScore, nextBestScore } from './quiz'
+import { QUESTIONS, POINTS, maskQuestion, maxScore, nextBestScore, pointsFor } from './quiz'
 import './App.css'
 
 const TRANSITION_DURATION = 4
@@ -83,7 +83,7 @@ export default function App() {
     const q = QUESTIONS[qIndex]
 
     if (i === q.correctIndex) {
-      const pts = POINTS[attempt] ?? 0
+      const pts = pointsFor(attempt)
       setTotalScore(s => s + pts)
       setScores(s => [...s, pts])
       setPhase('correct')
