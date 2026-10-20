@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { QUESTIONS, maskQuestion, maxScore, nextBestScore } from './quiz'
+import { QUESTIONS, maskQuestion, maxScore, nextBestScore, pointsFor } from './quiz'
 
 describe('maskQuestion', () => {
   it('révèle une lettre sur quatre à la première tentative', () => {
@@ -35,6 +35,20 @@ describe('maxScore', () => {
     [10, 50],
   ])('vaut, pour un quiz de %i question(s), %i points', (questionCount, expected) => {
     expect(maxScore(questionCount)).toBe(expected)
+  })
+})
+
+describe('pointsFor', () => {
+  it.each([
+    [0, 5],
+    [1, 3],
+    [2, 1],
+  ])('vaut, pour une bonne réponse après %i erreur(s), %i points', (wrongPicks, expected) => {
+    expect(pointsFor(wrongPicks)).toBe(expected)
+  })
+
+  it('vaut 0 une fois les trois essais épuisés', () => {
+    expect(pointsFor(3)).toBe(0)
   })
 })
 

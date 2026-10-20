@@ -82,6 +82,33 @@ describe('App', () => {
     expect(screen.getByText('Bonne reponse ! +3 points')).toBeDefined()
   })
 
+  it('donne 1 point pour une bonne réponse à la troisième tentative', () => {
+    render(<App />)
+    wrongLabels(FIRST).slice(0, 2).forEach(pick)
+    expect(screen.getByText('Tentative 3 / 3')).toBeDefined()
+    pickCorrect(FIRST)
+    expect(screen.getByText('Bonne reponse ! +1 points')).toBeDefined()
+    expect(screen.getByText('Score : 1 pts')).toBeDefined()
+    goToNextQuestion()
+    QUESTIONS.slice(1).forEach(q => {
+      pickCorrect(q)
+      goToNextQuestion()
+    })
+    expect(within(scoreRows()[0]).getByText('1 pts')).toBeDefined()
+  })
+
+  it.each([
+    [0, 5],
+    [1, 3],
+    [2, 1],
+  ])('après %i erreur(s), ajoute au score les %i points annoncés par le message', (errors, pts) => {
+    render(<App />)
+    wrongLabels(FIRST).slice(0, errors).forEach(pick)
+    pickCorrect(FIRST)
+    expect(screen.getByText(`Bonne reponse ! +${pts} points`)).toBeDefined()
+    expect(screen.getByText(`Score : ${pts} pts`)).toBeDefined()
+  })
+
   it('affiche la bonne réponse sans points après trois erreurs', () => {
     render(<App />)
     wrongLabels(FIRST).forEach(pick)

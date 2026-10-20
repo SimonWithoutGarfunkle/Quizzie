@@ -10,7 +10,7 @@ import victoryAnim from './animations/victory2.json'
 import errorAnim from './animations/error.json'
 import confettiAnim from './animations/confetti.json'
 import nightmodeAnim from './animations/nightmode.json'
-import { QUESTIONS, POINTS, maskQuestion, maxScore, nextBestScore, pointsFor } from './quiz'
+import { QUESTIONS, maskQuestion, maxScore, nextBestScore, pointsFor } from './quiz'
 import './App.css'
 
 const TRANSITION_DURATION = 4
@@ -205,7 +205,7 @@ export default function App() {
               />
               <span className="feedback-text">
                 {phase === 'correct'
-                  ? `Bonne reponse ! +${POINTS[attempt] ?? 0} points`
+                  ? `Bonne reponse ! +${pointsFor(attempt)} points`
                   : `Plus de tentatives ! Reponse : ${q.choices[q.correctIndex]}`}
               </span>
             </div>
