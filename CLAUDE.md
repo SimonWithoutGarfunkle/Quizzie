@@ -15,7 +15,7 @@ Vérification après chaque modification : `npx tsc -b && npm run lint && npm te
 
 ## Structure
 
-- `src/quiz.ts` : questions, barème et masquage du texte des questions, sans dépendance à React.
+- `src/quiz.ts` : questions, barème, meilleur score et masquage du texte des questions, sans dépendance à React. L'accès à `localStorage` reste dans `App.tsx`.
 - `src/App.tsx` : déroulé du quiz (phases, score) et assemblage des pages.
 - `src/StartMenu.tsx` : type `Page` et entrées du menu Démarrer. La navigation passe par l'état `page` de `App`, sans routeur.
 - `src/WindowChrome.tsx` : `TitleBar` et `StatusBar` des fenêtres.
