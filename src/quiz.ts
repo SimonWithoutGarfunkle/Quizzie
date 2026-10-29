@@ -39,12 +39,65 @@ export const QUESTIONS: Question[] = [
 
 export type Country = 'es' | 'fr' | 'gb' | 'de'
 
-// Pays dont le drapeau s'affiche en fond selon la capitale choisie à la question 1
+// Pays de la capitale choisie à la question 1 : drapeau en fond et teinte de l'animation de fin
 export const CAPITAL_COUNTRIES: Record<string, Country> = {
   Madrid: 'es',
   Paris: 'fr',
   Londres: 'gb',
   Berlin: 'de',
+}
+
+export const FLAG_COLORS = {
+  es: { red: '#AA151B', yellow: '#F1BF00' },
+  fr: { blue: '#0055A4', white: '#FFFFFF', red: '#EF4135' },
+  gb: { blue: '#012169', white: '#FFFFFF', red: '#C8102E' },
+  de: { black: '#000000', red: '#DD0000', gold: '#FFCE00' },
+} satisfies Record<Country, Record<string, string>>
+
+// Dans confetti.json, tout seuil entre 0.108 (ardoise foncée, gardée) et 0.128 (cyan pâle, recoloré)
+// donne le même partage
+const NEUTRAL_SPREAD = 0.12
+
+export function isNeutral(rgb: number[]): boolean {
+  const [r, g, b] = rgb
+  return Math.max(r, g, b) - Math.min(r, g, b) <= NEUTRAL_SPREAD
+}
+
+function hexToRgb(hex: string): number[] {
+  return [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255)
+}
+
+// Copie de l'animation Lottie où chaque couleur vive statique (`c.k` = [r, g, b, a]) des remplissages
+// et contours devient une couleur du drapeau, attribuée en boucle dans l'ordre de première apparition
+export function tintAnimation(animation: unknown, country: Country): unknown {
+  const palette = Object.values(FLAG_COLORS[country]).map(hexToRgb)
+  const targets = new Map<string, number[]>()
+
+  function tint([r, g, b, a]: number[]): number[] {
+    if (isNeutral([r, g, b])) return [r, g, b, a]
+    const key = `${r},${g},${b}`
+    let target = targets.get(key)
+    if (!target) {
+      target = palette[targets.size % palette.length]
+      targets.set(key, target)
+    }
+    return [...target, a]
+  }
+
+  function walk(node: unknown): unknown {
+    if (Array.isArray(node)) return node.map(walk)
+    if (node === null || typeof node !== 'object') return node
+    const copy: Record<string, unknown> = Object.fromEntries(
+      Object.entries(node).map(([key, value]) => [key, walk(value)]),
+    )
+    const color = copy.c as { a?: number; k?: unknown } | undefined
+    if ((copy.ty === 'fl' || copy.ty === 'st') && color?.a === 0 && Array.isArray(color.k)) {
+      copy.c = { ...color, k: tint(color.k) }
+    }
+    return copy
+  }
+
+  return walk(animation)
 }
 
 export const POINTS = [5, 3, 1]

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { Country } from './quiz'
+import { FLAG_COLORS, type Country } from './quiz'
 
 const LABELS: Record<Country, string> = {
   es: "Drapeau de l'Espagne",
@@ -11,31 +11,31 @@ const LABELS: Record<Country, string> = {
 const DRAWINGS: Record<Country, ReactNode> = {
   es: (
     <>
-      <rect width="90" height="60" fill="#AA151B" />
-      <rect y="15" width="90" height="30" fill="#F1BF00" />
+      <rect width="90" height="60" fill={FLAG_COLORS.es.red} />
+      <rect y="15" width="90" height="30" fill={FLAG_COLORS.es.yellow} />
     </>
   ),
   fr: (
     <>
-      <rect width="30" height="60" fill="#0055A4" />
-      <rect x="30" width="30" height="60" fill="#FFFFFF" />
-      <rect x="60" width="30" height="60" fill="#EF4135" />
+      <rect width="30" height="60" fill={FLAG_COLORS.fr.blue} />
+      <rect x="30" width="30" height="60" fill={FLAG_COLORS.fr.white} />
+      <rect x="60" width="30" height="60" fill={FLAG_COLORS.fr.red} />
     </>
   ),
   gb: (
     <>
-      <rect width="90" height="60" fill="#012169" />
-      <path d="M0,0 L90,60 M90,0 L0,60" stroke="#FFFFFF" strokeWidth="12" />
-      <path d="M0,0 L90,60 M90,0 L0,60" stroke="#C8102E" strokeWidth="4" />
-      <path d="M45,0 V60 M0,30 H90" stroke="#FFFFFF" strokeWidth="20" />
-      <path d="M45,0 V60 M0,30 H90" stroke="#C8102E" strokeWidth="12" />
+      <rect width="90" height="60" fill={FLAG_COLORS.gb.blue} />
+      <path d="M0,0 L90,60 M90,0 L0,60" stroke={FLAG_COLORS.gb.white} strokeWidth="12" />
+      <path d="M0,0 L90,60 M90,0 L0,60" stroke={FLAG_COLORS.gb.red} strokeWidth="4" />
+      <path d="M45,0 V60 M0,30 H90" stroke={FLAG_COLORS.gb.white} strokeWidth="20" />
+      <path d="M45,0 V60 M0,30 H90" stroke={FLAG_COLORS.gb.red} strokeWidth="12" />
     </>
   ),
   de: (
     <>
-      <rect width="90" height="20" fill="#000000" />
-      <rect y="20" width="90" height="20" fill="#DD0000" />
-      <rect y="40" width="90" height="20" fill="#FFCE00" />
+      <rect width="90" height="20" fill={FLAG_COLORS.de.black} />
+      <rect y="20" width="90" height="20" fill={FLAG_COLORS.de.red} />
+      <rect y="40" width="90" height="20" fill={FLAG_COLORS.de.gold} />
     </>
   ),
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type ReactNode } from 'react'
+import { useState, useEffect, useMemo, useRef, type ReactNode } from 'react'
 import Lottie from './Lottie'
 import DayNightToggle from './DayNightToggle'
 import StartMenu, { type Page } from './StartMenu'
@@ -11,7 +11,16 @@ import errorAnim from './animations/error.json'
 import confettiAnim from './animations/confetti.json'
 import nightmodeAnim from './animations/nightmode.json'
 import Flag from './Flag'
-import { CAPITAL_COUNTRIES, QUESTIONS, maskQuestion, maxScore, nextBestScore, pointsFor, type Country } from './quiz'
+import {
+  CAPITAL_COUNTRIES,
+  QUESTIONS,
+  maskQuestion,
+  maxScore,
+  nextBestScore,
+  pointsFor,
+  tintAnimation,
+  type Country,
+} from './quiz'
 import './App.css'
 
 const TRANSITION_DURATION = 4
@@ -64,6 +73,7 @@ export default function App() {
   const [scores, setScores] = useState<number[]>([])
   const [bestScore, setBestScore] = useState(0)
   const [isNight, setIsNight] = useState(false)
+  const [q1Country, setQ1Country] = useState<Country>()  // pays du dernier choix à la question 1
   const time = useTime()
   const desktopClassName = `desktop${isNight ? ' desktop--night' : ''}`
   const nightBackground = isNight && (
@@ -77,20 +87,22 @@ export default function App() {
 
   const attempt = wrongPicks.length  // alias lisible
 
-  // handlePick ignore les clics hors de 'playing' : le dernier choix est donc la bonne réponse
-  // en 'correct', sinon la dernière erreur. qIndex vaut encore 0 pendant le chargement vers la Q2.
-  const lastPick = phase === 'correct' ? QUESTIONS[qIndex].correctIndex : wrongPicks.at(-1)
-  const flagCountry: Country | undefined =
-    !isNight && qIndex === 0 && phase !== 'transitioning' && lastPick !== undefined
-      ? CAPITAL_COUNTRIES[QUESTIONS[0].choices[lastPick]]
-      : undefined
+  // qIndex vaut encore 0 pendant le chargement vers la Q2
+  const flagCountry = !isNight && qIndex === 0 && phase !== 'transitioning' ? q1Country : undefined
   const flagBackground = flagCountry && <Flag country={flagCountry} />
+  // lottie-react redémarre l'animation à chaque nouvelle référence d'animationData, or l'horloge
+  // fait re-rendre l'écran de fin toutes les 10 s
+  const finishedAnim = useMemo(
+    () => (q1Country ? tintAnimation(confettiAnim, q1Country) : confettiAnim),
+    [q1Country],
+  )
 
   function handlePick(i: number) {
     if (phase !== 'playing') return
     if (wrongPicks.includes(i)) return  // déjà essayé
 
     const q = QUESTIONS[qIndex]
+    if (qIndex === 0) setQ1Country(CAPITAL_COUNTRIES[q.choices[i]])
 
     if (i === q.correctIndex) {
       const pts = pointsFor(attempt)
@@ -129,6 +141,7 @@ export default function App() {
     setWrongPicks([])
     setTotalScore(0)
     setScores([])
+    setQ1Country(undefined)
     setPhase('playing')
     setPage('error')
   }
@@ -155,7 +168,7 @@ export default function App() {
         <TitleBar title="QUIZZIE.EXE — Resultats" />
         <div className="window-body">
           <div className="confetti-wrapper">
-            <Lottie animationData={confettiAnim} loop style={{ width: '100%', height: 140 }} />
+            <Lottie animationData={finishedAnim} loop style={{ width: '100%', height: 140 }} />
           </div>
           <p className="result-title">Partie terminee !</p>
           <div className="inset-box score-summary">

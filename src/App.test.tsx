@@ -1,10 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import App from './App'
-import { QUESTIONS, maxScore, type Question } from './quiz'
+import Lottie from './Lottie'
+import loadingAnim from './animations/loading.json'
+import victoryAnim from './animations/victory2.json'
+import errorAnim from './animations/error.json'
+import confettiAnim from './animations/confetti.json'
+import nightmodeAnim from './animations/nightmode.json'
+import { QUESTIONS, maxScore, tintAnimation, type Question } from './quiz'
 
 // jsdom ne sait pas rendre les animations Lottie
-vi.mock('./Lottie', () => ({ default: () => null }))
+vi.mock('./Lottie', () => ({ default: vi.fn(() => null) }))
 vi.mock('@lottiefiles/dotlottie-react', () => ({ DotLottieReact: () => null }))
 // la vraie bascule passe par un callback du DotLottieReact, mocké ci-dessus ; vi.mock est remonté
 // en tête de fichier, d'où l'import de react dans la factory
@@ -24,6 +30,7 @@ vi.mock('./DayNightToggle', async () => {
 beforeEach(() => {
   vi.useFakeTimers()
   localStorage.clear()
+  vi.mocked(Lottie).mockClear()
 })
 
 afterEach(() => {
@@ -95,6 +102,20 @@ function navigate(label: string) {
 
 function capitalLabel(capital: string) {
   return choiceLabel(FIRST, FIRST.choices.indexOf(capital))
+}
+
+function receivedAnimations() {
+  return vi.mocked(Lottie).mock.calls.map(([props]) => props.animationData)
+}
+
+// joue les questions 2 à N et ne garde que les animations reçues depuis la dernière transition
+function finishFromQuestion2() {
+  QUESTIONS.slice(1).forEach((q, k) => {
+    pickCorrect(q)
+    if (k === QUESTION_COUNT - 2) vi.mocked(Lottie).mockClear()
+    goToNextQuestion()
+  })
+  expect(screen.getByText('Partie terminee !')).toBeDefined()
 }
 
 describe('App', () => {
@@ -377,5 +398,77 @@ describe('Drapeau en fond à la question 1', () => {
     navigate('All')
     expect(screen.queryByText('ERROR.EXE')).toBeNull()
     expect(flagNames()).toEqual(['Drapeau du Royaume-Uni'])
+  })
+})
+
+describe('Animation de fin aux couleurs du pays choisi à la question 1', () => {
+  it('teinte l\'animation de fin aux couleurs de la France après le choix de « Paris »', () => {
+    render(<App />)
+    pick(capitalLabel('Paris'))
+    goToNextQuestion()
+    finishFromQuestion2()
+    expect(receivedAnimations()).toContainEqual(tintAnimation(confettiAnim, 'fr'))
+    expect(receivedAnimations()).not.toContainEqual(confettiAnim)
+  })
+
+  it('teinte l\'animation de fin aux couleurs du dernier choix, « Londres » après « Madrid » et « Berlin »', () => {
+    render(<App />)
+    pick(capitalLabel('Madrid'))
+    pick(capitalLabel('Berlin'))
+    pick(capitalLabel('Londres'))
+    goToNextQuestion()
+    finishFromQuestion2()
+    expect(receivedAnimations()).toContainEqual(tintAnimation(confettiAnim, 'gb'))
+    expect(receivedAnimations()).not.toContainEqual(tintAnimation(confettiAnim, 'de'))
+  })
+
+  it("teinte l'animation de fin en mode nuit, aux couleurs de l'Allemagne après « Berlin » en dernier", () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Passer en mode nuit' }))
+    pick(capitalLabel('Madrid'))
+    pick(capitalLabel('Londres'))
+    pick(capitalLabel('Berlin'))
+    goToNextQuestion()
+    finishFromQuestion2()
+    expect(receivedAnimations()).toContainEqual(tintAnimation(confettiAnim, 'de'))
+  })
+
+  it('teinte la partie suivante selon son propre choix à la question 1 après « Rejouer »', () => {
+    render(<App />)
+    pick(capitalLabel('Londres'))
+    pick(capitalLabel('Berlin'))
+    pick(capitalLabel('Madrid'))
+    goToNextQuestion()
+    finishFromQuestion2()
+    expect(receivedAnimations()).toContainEqual(tintAnimation(confettiAnim, 'es'))
+    fireEvent.click(screen.getByRole('button', { name: 'Rejouer' }))
+    navigate('Quizz')
+    pick(capitalLabel('Paris'))
+    goToNextQuestion()
+    finishFromQuestion2()
+    expect(receivedAnimations()).toContainEqual(tintAnimation(confettiAnim, 'fr'))
+    expect(receivedAnimations()).not.toContainEqual(tintAnimation(confettiAnim, 'es'))
+  })
+
+  it("passe leurs données d'origine aux autres animations tant que la partie n'est pas terminée", () => {
+    const originals = [loadingAnim, victoryAnim, errorAnim, nightmodeAnim]
+    render(<App />)
+    pick(capitalLabel('Madrid'))
+    pickCorrect(FIRST)
+    goToNextQuestion()
+    fireEvent.click(screen.getByRole('button', { name: 'Passer en mode nuit' }))
+    wrongLabels(QUESTIONS[1]).forEach(pick)
+    goToNextQuestion()
+    fireEvent.click(screen.getByRole('button', { name: 'Passer en mode jour' }))
+    QUESTIONS.slice(2, -1).forEach(q => {
+      pickCorrect(q)
+      goToNextQuestion()
+    })
+    pickCorrect(QUESTIONS[QUESTION_COUNT - 1])
+    fireEvent.click(screen.getByRole('button', { name: 'Question suivante >' }))
+    expect(screen.getByText('Veuillez patienter...')).toBeDefined()
+    const received = receivedAnimations()
+    originals.forEach(anim => expect(received).toContain(anim))
+    received.forEach(anim => expect(originals).toContain(anim))
   })
 })
