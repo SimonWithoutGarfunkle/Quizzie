@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { QUESTIONS, maskQuestion, maxScore, nextBestScore, pointsFor } from './quiz'
+import { CAPITAL_COUNTRIES, QUESTIONS, maskQuestion, maxScore, nextBestScore, pointsFor } from './quiz'
 
 describe('maskQuestion', () => {
   it('révèle une lettre sur quatre à la première tentative', () => {
@@ -25,6 +25,21 @@ describe('QUESTIONS', () => {
     expect(q.choices).toHaveLength(4)
     expect(q.correctIndex).toBeGreaterThanOrEqual(0)
     expect(q.correctIndex).toBeLessThan(q.choices.length)
+  })
+})
+
+describe('CAPITAL_COUNTRIES', () => {
+  it.each([
+    ['Madrid', 'es'],
+    ['Paris', 'fr'],
+    ['Londres', 'gb'],
+    ['Berlin', 'de'],
+  ])('associe %s au pays « %s »', (capital, country) => {
+    expect(CAPITAL_COUNTRIES[capital]).toBe(country)
+  })
+
+  it('a un pays pour chaque choix de la première question', () => {
+    QUESTIONS[0].choices.forEach(choice => expect(CAPITAL_COUNTRIES[choice]).toBeDefined())
   })
 })
 

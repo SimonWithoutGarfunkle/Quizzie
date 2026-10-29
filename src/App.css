@@ -19,7 +19,8 @@
   background: #2b2b2b;
 }
 
-.desktop-bg-anim {
+.desktop-bg-anim,
+.desktop-bg-flag {
   position: absolute;
   inset: 0;
   width: 100%;

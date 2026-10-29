@@ -37,6 +37,16 @@ export const QUESTIONS: Question[] = [
   },
 ]
 
+export type Country = 'es' | 'fr' | 'gb' | 'de'
+
+// Pays dont le drapeau s'affiche en fond selon la capitale choisie à la question 1
+export const CAPITAL_COUNTRIES: Record<string, Country> = {
+  Madrid: 'es',
+  Paris: 'fr',
+  Londres: 'gb',
+  Berlin: 'de',
+}
+
 export const POINTS = [5, 3, 1]
 
 // Points d'une bonne réponse trouvée après `wrongPicks` erreurs, 0 une fois les essais épuisés

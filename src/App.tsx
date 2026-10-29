@@ -10,7 +10,8 @@ import victoryAnim from './animations/victory2.json'
 import errorAnim from './animations/error.json'
 import confettiAnim from './animations/confetti.json'
 import nightmodeAnim from './animations/nightmode.json'
-import { QUESTIONS, maskQuestion, maxScore, nextBestScore, pointsFor } from './quiz'
+import Flag from './Flag'
+import { CAPITAL_COUNTRIES, QUESTIONS, maskQuestion, maxScore, nextBestScore, pointsFor, type Country } from './quiz'
 import './App.css'
 
 const TRANSITION_DURATION = 4
@@ -75,6 +76,15 @@ export default function App() {
   )
 
   const attempt = wrongPicks.length  // alias lisible
+
+  // handlePick ignore les clics hors de 'playing' : le dernier choix est donc la bonne réponse
+  // en 'correct', sinon la dernière erreur. qIndex vaut encore 0 pendant le chargement vers la Q2.
+  const lastPick = phase === 'correct' ? QUESTIONS[qIndex].correctIndex : wrongPicks.at(-1)
+  const flagCountry: Country | undefined =
+    !isNight && qIndex === 0 && phase !== 'transitioning' && lastPick !== undefined
+      ? CAPITAL_COUNTRIES[QUESTIONS[0].choices[lastPick]]
+      : undefined
+  const flagBackground = flagCountry && <Flag country={flagCountry} />
 
   function handlePick(i: number) {
     if (phase !== 'playing') return
@@ -247,6 +257,7 @@ export default function App() {
   return (
     <div className={desktopClassName}>
       {nightBackground}
+      {flagBackground}
       <DayNightToggle onToggle={setIsNight} />
       {page === 'quiz' && quizWindow}
       {page === 'error' && <ErrorPage />}

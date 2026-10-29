@@ -6,6 +6,20 @@ import { QUESTIONS, maxScore, type Question } from './quiz'
 // jsdom ne sait pas rendre les animations Lottie
 vi.mock('./Lottie', () => ({ default: () => null }))
 vi.mock('@lottiefiles/dotlottie-react', () => ({ DotLottieReact: () => null }))
+// la vraie bascule passe par un callback du DotLottieReact, mocké ci-dessus ; vi.mock est remonté
+// en tête de fichier, d'où l'import de react dans la factory
+vi.mock('./DayNightToggle', async () => {
+  const { createElement, Fragment } = await import('react')
+  return {
+    default: ({ onToggle }: { onToggle: (isNight: boolean) => void }) =>
+      createElement(
+        Fragment,
+        null,
+        createElement('button', { onClick: () => onToggle(true) }, 'Passer en mode nuit'),
+        createElement('button', { onClick: () => onToggle(false) }, 'Passer en mode jour'),
+      ),
+  }
+})
 
 beforeEach(() => {
   vi.useFakeTimers()
@@ -64,6 +78,23 @@ function playGame(missed: number) {
 
 function bestScoreLine(score: number) {
   return `Meilleur score : ${score} / ${MAX_SCORE} points`
+}
+
+function flags() {
+  return screen.queryAllByRole('img', { name: /^Drapeau/ })
+}
+
+function flagNames() {
+  return flags().map(flag => flag.getAttribute('aria-label'))
+}
+
+function navigate(label: string) {
+  fireEvent.click(screen.getByRole('button', { name: '⊞ Demarrer' }))
+  fireEvent.click(screen.getByRole('button', { name: label }))
+}
+
+function capitalLabel(capital: string) {
+  return choiceLabel(FIRST, FIRST.choices.indexOf(capital))
 }
 
 describe('App', () => {
@@ -238,5 +269,113 @@ describe('Meilleur score', () => {
       vi.runOnlyPendingTimers()
     })
     expect(localStorage.getItem(BEST_SCORE_KEY)).toBe(String(MAX_SCORE))
+  })
+})
+
+describe('Drapeau en fond à la question 1', () => {
+  it("n'affiche aucun drapeau avant le premier choix", () => {
+    render(<App />)
+    expect(flags()).toHaveLength(0)
+  })
+
+  it.each([
+    ['Londres', 'Drapeau du Royaume-Uni'],
+    ['Madrid', "Drapeau de l'Espagne"],
+    ['Berlin', "Drapeau de l'Allemagne"],
+    ['Paris', 'Drapeau de la France'],
+  ])('affiche après le choix de %s le « %s »', (capital, flagName) => {
+    render(<App />)
+    pick(capitalLabel(capital))
+    expect(flagNames()).toEqual([flagName])
+  })
+
+  it('remplace le drapeau par celui du dernier choix', () => {
+    render(<App />)
+    pick(capitalLabel('Madrid'))
+    pick(capitalLabel('Londres'))
+    expect(flagNames()).toEqual(['Drapeau du Royaume-Uni'])
+  })
+
+  it('garde le drapeau de la troisième mauvaise réponse une fois la réponse révélée', () => {
+    render(<App />)
+    pick(capitalLabel('Madrid'))
+    pick(capitalLabel('Londres'))
+    pick(capitalLabel('Berlin'))
+    expect(screen.getByText('Plus de tentatives ! Reponse : Paris')).toBeDefined()
+    expect(flagNames()).toEqual(["Drapeau de l'Allemagne"])
+  })
+
+  it("n'affiche plus de drapeau dès le chargement de la question 2 et jusqu'à la fin de la partie", () => {
+    render(<App />)
+    pick(capitalLabel('Londres'))
+    pickCorrect(FIRST)
+    expect(flagNames()).toEqual(['Drapeau de la France'])
+    fireEvent.click(screen.getByRole('button', { name: 'Question suivante >' }))
+    expect(screen.getByText('Veuillez patienter...')).toBeDefined()
+    expect(flags()).toHaveLength(0)
+    act(() => {
+      vi.runOnlyPendingTimers()
+    })
+    QUESTIONS.slice(1).forEach(q => {
+      expect(flags()).toHaveLength(0)
+      wrongLabels(q).slice(0, 2).forEach(label => {
+        pick(label)
+        expect(flags()).toHaveLength(0)
+      })
+      pickCorrect(q)
+      expect(flags()).toHaveLength(0)
+      goToNextQuestion()
+    })
+    expect(screen.getByText('Partie terminee !')).toBeDefined()
+    expect(flags()).toHaveLength(0)
+  })
+
+  it("n'affiche plus de drapeau après « Rejouer » tant que la question 1 n'a pas de réponse", () => {
+    render(<App />)
+    // finir sur trois erreurs laisse des mauvais choix à remettre à zéro au redémarrage
+    playGame(QUESTION_COUNT)
+    fireEvent.click(screen.getByRole('button', { name: 'Rejouer' }))
+    expect(flags()).toHaveLength(0)
+    navigate('Quizz')
+    expect(screen.getByText(`Question 1 / ${QUESTION_COUNT}`)).toBeDefined()
+    expect(flags()).toHaveLength(0)
+    pick(capitalLabel('Londres'))
+    expect(flagNames()).toEqual(['Drapeau du Royaume-Uni'])
+  })
+
+  it("n'affiche pas de drapeau en mode nuit", () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Passer en mode nuit' }))
+    pick(capitalLabel('Londres'))
+    expect(flags()).toHaveLength(0)
+  })
+
+  it('affiche le drapeau du dernier choix fait de nuit au retour en mode jour', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Passer en mode nuit' }))
+    pick(capitalLabel('Berlin'))
+    fireEvent.click(screen.getByRole('button', { name: 'Passer en mode jour' }))
+    expect(flagNames()).toEqual(["Drapeau de l'Allemagne"])
+  })
+
+  it('laisse les réponses et la barre des tâches utilisables quand un drapeau est affiché', () => {
+    render(<App />)
+    pick(capitalLabel('Madrid'))
+    pick(capitalLabel('Londres'))
+    expect(screen.getByText('Tentative 3 / 3')).toBeDefined()
+    expect(flagNames()).toEqual(['Drapeau du Royaume-Uni'])
+    fireEvent.click(screen.getByRole('button', { name: '⊞ Demarrer' }))
+    expect(screen.getByRole('button', { name: 'Error' })).toBeDefined()
+  })
+
+  it('garde le drapeau en fond sur les autres pages du menu Démarrer', () => {
+    render(<App />)
+    pick(capitalLabel('Londres'))
+    navigate('Error')
+    expect(screen.getByText('ERROR.EXE')).toBeDefined()
+    expect(flagNames()).toEqual(['Drapeau du Royaume-Uni'])
+    navigate('All')
+    expect(screen.queryByText('ERROR.EXE')).toBeNull()
+    expect(flagNames()).toEqual(['Drapeau du Royaume-Uni'])
   })
 })
